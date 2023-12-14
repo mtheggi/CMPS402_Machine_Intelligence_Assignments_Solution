@@ -43,7 +43,18 @@ def minimum_remaining_values(problem: Problem, domains: Dict[str, set]) -> str:
 #            since they contain the current domains of unassigned variables only.
 def forward_checking(problem: Problem, assigned_variable: str, assigned_value: Any, domains: Dict[str, set]) -> bool:
     #TODO: Write this function
-    NotImplemented()
+    for constraint in problem.constraints: 
+        if isinstance(constraint , BinaryConstraint): 
+            if assigned_variable in constraint.variables:
+                other_variable = constraint.get_other(assigned_variable) 
+                if domains.get(other_variable) is not None:
+                    new_domain = {value for value in domains[other_variable] if constraint.condition(assigned_value, value)} 
+                    if len(new_domain)== 0:
+                        return False  
+                    domains[other_variable] = new_domain
+    return True
+
+    #NotImplemented()
 
 # This function should return the domain of the given variable order based on the "least restraining value" heuristic.
 # IMPORTANT: This function should not modify any of the given arguments.
@@ -57,7 +68,23 @@ def forward_checking(problem: Problem, assigned_variable: str, assigned_value: A
 #            since they contain the current domains of unassigned variables only.
 def least_restraining_values(problem: Problem, variable_to_assign: str, domains: Dict[str, set]) -> List[Any]:
     #TODO: Write this function
-    NotImplemented()
+    values = {} 
+    for value in domains[variable_to_assign]:
+        domain2 = domains.copy()
+        valuescount =0 
+        if forward_checking(problem, variable_to_assign, value, domain2):
+            for constraint in problem.constraints:
+                if isinstance(constraint , BinaryConstraint):
+                    if variable_to_assign in constraint.variables:
+                        other_variable = constraint.get_other(variable_to_assign)
+                        if domain2.get(other_variable) is not None:
+                            valuescount += len(domain2[other_variable])
+
+        values[value] = valuescount            
+    
+    test = sorted(values.items(), key=lambda x: x[1] , reverse=True)
+    
+    return [value for value,count in test ] 
 
 # This function should solve CSP problems using backtracking search with forward checking.
 # The variable ordering should be decided by the MRV heuristic.
@@ -69,6 +96,32 @@ def least_restraining_values(problem: Problem, variable_to_assign: str, domains:
 #            for every assignment including the initial empty assignment, EXCEPT for the assignments pruned by the forward checking.
 #            Also, if 1-Consistency deems the whole problem unsolvable, you shouldn't call "problem.is_complete" at all.
 def solve(problem: Problem) -> Optional[Assignment]:
-    #TODO: Write this function
-    NotImplemented()
+    return backtracking_search({} , problem) 
+    
+
+
+
+def backtracking_search(assignments : Assignment , problem : Problem) -> Optional[Assignment]:
+        
+    if problem.is_complete(assignments):
+        return assignments 
+    variable_selected = minimum_remaining_values(problem, problem.domains)  
+    for value in least_restraining_values(problem , variable_selected , problem.domains): 
+        # check if value is consistent with assignment 
+        new_assignments =  assignments.copy() 
+        new_assignments[variable_selected] = value
+        if problem.satisfies_constraints(new_assignments): # assignment is consistend 
+            # forward checking [inference ] 
+            assignments[variable_selected] = value
+            new_domain = problem.domains.copy()  
+            if forward_checking(problem, variable_selected, value, new_domain):
+                problem.domains= new_domain 
+                result = backtracking_search(assignments , problem)
+                if result is not None:
+                    return result 
+            assignments.pop(variable_selected)
+                
+
+    # return None
+#NotImplemented()
     
