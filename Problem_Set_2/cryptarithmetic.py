@@ -1,8 +1,9 @@
 from typing import Tuple
 import re
-from CSP import Assignment, Problem, UnaryConstraint, BinaryConstraint
+from CSP import Assignment, Problem, UnaryConstraint, BinaryConstraint,Constraint
 
 #TODO (Optional): Import any builtin library or define any helper function you want to use
+
 
 # This is a class to define for cryptarithmetic puzzles as CSPs
 class CryptArithmeticProblem(Problem):
@@ -52,7 +53,54 @@ class CryptArithmeticProblem(Problem):
         problem.variables = []
         problem.domains = {}
         problem.constraints = []
+        set_of_letters = set(LHS0 + LHS1 + RHS)
+        for letter in set_of_letters:
+            problem.variables.append(letter)
+            problem.domains[letter] = set(range(10))    
+        # firs letter from eacht string can't be 0
+        problem.domains[LHS0[0]]= set(range(1,10))
+        problem.domains[LHS1[0]]= set(range(1,10))
+        problem.domains[RHS[0]]= set(range(1,10))
+
+
+
+        carriesnumber= len(RHS)-1 
+        #add carries to variables
+        for i in range(carriesnumber):
+            problem.variables.append(f"C{i}")
+            problem.domains[f"C{i}"] = set(range(2))
+        #add binary constraints
+        list_of_letters = list(set_of_letters)
+        for i in range(len(list_of_letters)):
+            for j in range(i+1, len(list_of_letters)):
+                problem.constraints.append(BinaryConstraint((list_of_letters[i], list_of_letters[j]), lambda x,y: x!=y))
+        #add binary     
+        #add trenary constraints
+                #  cccc  
+                #   LHS 0
+                #   LHS 1
+                #-------------
+                #   RH  S 
+            
+    
+        for i in range(len(RHS)): 
+            if i == (len(RHS)-1): 
+                letter1 = LHS0[-1]
+                letter2 = LHS1[-1]
+                concat= letter1+ letter2
+                problem.variables.append(concat)
+                problem.domains[concat] = set(range(1,100))
+                problem.constraints.append(BinaryConstraint((concat, letter1), lambda x,y: (x%10)==y ))
+                problem.constraints.append(BinaryConstraint((concat, letter2), lambda x,y: (x//10)==y ))
+                problem.constraints.append(BinaryConstraint((concat, RHS[-1]), lambda x,y:  (x+y*10)%10==y ))
+
+
+
+
+
+        print(problem.variables)
         return problem
+
 
     # Read a cryptarithmetic puzzle from a file
     @staticmethod

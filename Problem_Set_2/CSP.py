@@ -71,4 +71,12 @@ class Problem:
     
     # Return True if the assignment satisfies all the constraints.
     def satisfies_constraints(self, assignment: Assignment) -> bool:
+        # for constraint in self.constraints: 
+        #     if isinstance(constraint , UnaryConstraint):
+        #         print("uniary" , constraint.variable)
+        #     if isinstance(constraint , BinaryConstraint): 
+        #         print("binary" , constraint.variables)                
+        #     if not constraint.is_satisfied(assignment):
+        #         print("ccc" ,constraint.variables)
+        #         return False
         return all(constraint.is_satisfied(assignment) for constraint in self.constraints)

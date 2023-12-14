@@ -43,6 +43,7 @@ def minimum_remaining_values(problem: Problem, domains: Dict[str, set]) -> str:
 #            since they contain the current domains of unassigned variables only.
 def forward_checking(problem: Problem, assigned_variable: str, assigned_value: Any, domains: Dict[str, set]) -> bool:
     #TODO: Write this function
+
     for constraint in problem.constraints: 
         if isinstance(constraint , BinaryConstraint): 
             if assigned_variable in constraint.variables:
@@ -52,6 +53,8 @@ def forward_checking(problem: Problem, assigned_variable: str, assigned_value: A
                     if len(new_domain)== 0:
                         return False  
                     domains[other_variable] = new_domain
+    # domains.pop(assigned_variable)
+    # problem.domains = domains
     return True
 
     #NotImplemented()
@@ -82,9 +85,12 @@ def least_restraining_values(problem: Problem, variable_to_assign: str, domains:
 
         values[value] = valuescount            
     
+    # print(values)
     test = sorted(values.items(), key=lambda x: x[1] , reverse=True)
-    
-    return [value for value,count in test ] 
+    # print(test) 
+    returned = [value for value,count in test]
+    # print(returned)
+    return returned
 
 # This function should solve CSP problems using backtracking search with forward checking.
 # The variable ordering should be decided by the MRV heuristic.
@@ -98,31 +104,68 @@ def least_restraining_values(problem: Problem, variable_to_assign: str, domains:
 def solve(problem: Problem) -> Optional[Assignment]:
     if not one_consistency(problem):
         return None
+    # for constraint in problem.constraints:
+    #     print(constraint)
+
+    # for var in problem.variables:
+    #     print(var , problem.domains[var])   
     return backtracking_search({} , problem) 
     
 
+def is_assignment_consistent(assignment: Assignment, problem: Problem) -> bool:
+    for constraint in problem.constraints:
+        if isinstance(constraint, BinaryConstraint):
+            variable1, variable2 = constraint.variables
+            if variable1 in assignment and variable2 in assignment:
+                if not constraint.is_satisfied(assignment):
+                    return False
+    return True
 
 
 def backtracking_search(assignments : Assignment , problem : Problem) -> Optional[Assignment]:
+    # print(assignments)
     if problem.is_complete(assignments):
         return assignments 
     variable_selected = minimum_remaining_values(problem, problem.domains)  
-    for value in least_restraining_values(problem , variable_selected , problem.domains): 
+    # print("selceted variable :", variable_selected)
+    LRV =least_restraining_values(problem , variable_selected , problem.domains)
+    # print("selceted values :", LRV)
+    for value in LRV: 
         # check if value is consistent with assignment 
-        new_assignments =  assignments.copy() 
+        # print("selceted value :", value)
+
+        # new_assignments =  assignments.copy() 
+        # new_assignments[variable_selected] = value
+        # print("old :", assignments)
+        # print("new assignment :", new_assignments)  
+        # print("problem assignment satisfaction : " , problem.satisfies_constraints(new_assignments) ) 
+        prev_assignments = assignments.copy()
+        new_assignments =  assignments.copy()
         new_assignments[variable_selected] = value
-        if problem.satisfies_constraints(new_assignments): # assignment is consistend 
+        if is_assignment_consistent(assignments , problem): # assignment is consistend 
+            # print("")
             # forward checking [inference ] 
-            assignments[variable_selected] = value
-            new_domain = problem.domains.copy()  
+            # new_domain = problem.domains.copy()  
+            # print(forward_checking(problem, variable_selected, value, new_domain))
+            previous_domain = problem.domains.copy()
+            new_domain = problem.domains.copy() 
             if forward_checking(problem, variable_selected, value, new_domain):
-                problem.domains= new_domain 
+                assignments[variable_selected] = value
+                problem.domains = new_domain
+                temp_var = problem.domains[variable_selected]
+                if variable_selected in problem.domains:
+                    problem.domains.pop(variable_selected)
+                # print("new domains :" , problem.domains)
+                # print(problem.domains[variable_selected])
                 result = backtracking_search(assignments , problem)
                 if result is not None:
                     return result 
-            assignments.pop(variable_selected)
                 
+                problem.domains=previous_domain
+                assignments = prev_assignments 
+        else : 
+            assignments.pop(variable_selected)            
 
-    # return None
+    return None
 #NotImplemented()
     
