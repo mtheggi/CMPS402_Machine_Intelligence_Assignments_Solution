@@ -96,13 +96,14 @@ def least_restraining_values(problem: Problem, variable_to_assign: str, domains:
 #            for every assignment including the initial empty assignment, EXCEPT for the assignments pruned by the forward checking.
 #            Also, if 1-Consistency deems the whole problem unsolvable, you shouldn't call "problem.is_complete" at all.
 def solve(problem: Problem) -> Optional[Assignment]:
+    if not one_consistency(problem):
+        return None
     return backtracking_search({} , problem) 
     
 
 
 
 def backtracking_search(assignments : Assignment , problem : Problem) -> Optional[Assignment]:
-        
     if problem.is_complete(assignments):
         return assignments 
     variable_selected = minimum_remaining_values(problem, problem.domains)  
