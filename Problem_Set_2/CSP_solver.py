@@ -48,11 +48,14 @@ def forward_checking(problem: Problem, assigned_variable: str, assigned_value: A
         if isinstance(constraint , BinaryConstraint): 
             if assigned_variable in constraint.variables:
                 other_variable = constraint.get_other(assigned_variable) 
-                if domains.get(other_variable) is not None:
+                if other_variable in domains:
                     new_domain = {value for value in domains[other_variable] if constraint.condition(assigned_value, value)} 
-                    if len(new_domain)== 0:
-                        return False  
                     domains[other_variable] = new_domain
+    
+    for variable in list(domains.keys()):
+        if len(domains[variable]) == 0 :
+            return False
+    
     # domains.pop(assigned_variable)
     # problem.domains = domains
     return True
@@ -80,14 +83,16 @@ def least_restraining_values(problem: Problem, variable_to_assign: str, domains:
                 if isinstance(constraint , BinaryConstraint):
                     if variable_to_assign in constraint.variables:
                         other_variable = constraint.get_other(variable_to_assign)
-                        if domain2.get(other_variable) is not None:
+                        if other_variable in list(domain2.keys()):
                             valuescount += len(domain2[other_variable])
 
         values[value] = valuescount            
     
     # print(values)
-    test = sorted(values.items(), key=lambda x: x[1] , reverse=True)
+    test  = sorted(values.items(), key=lambda item: (-item[1], item[0]))
+    
     # print(test) 
+
     returned = [value for value,count in test]
     # print(returned)
     return returned
@@ -104,11 +109,6 @@ def least_restraining_values(problem: Problem, variable_to_assign: str, domains:
 def solve(problem: Problem) -> Optional[Assignment]:
     if not one_consistency(problem):
         return None
-    # for constraint in problem.constraints:
-    #     print(constraint)
-
-    # for var in problem.variables:
-    #     print(var , problem.domains[var])   
     return backtracking_search({} , problem) 
     
 
@@ -131,22 +131,10 @@ def backtracking_search(assignments : Assignment , problem : Problem) -> Optiona
     LRV =least_restraining_values(problem , variable_selected , problem.domains)
     # print("selceted values :", LRV)
     for value in LRV: 
-        # check if value is consistent with assignment 
-        # print("selceted value :", value)
-
-        # new_assignments =  assignments.copy() 
-        # new_assignments[variable_selected] = value
-        # print("old :", assignments)
-        # print("new assignment :", new_assignments)  
-        # print("problem assignment satisfaction : " , problem.satisfies_constraints(new_assignments) ) 
         prev_assignments = assignments.copy()
         new_assignments =  assignments.copy()
         new_assignments[variable_selected] = value
         if is_assignment_consistent(assignments , problem): # assignment is consistend 
-            # print("")
-            # forward checking [inference ] 
-            # new_domain = problem.domains.copy()  
-            # print(forward_checking(problem, variable_selected, value, new_domain))
             previous_domain = problem.domains.copy()
             new_domain = problem.domains.copy() 
             if forward_checking(problem, variable_selected, value, new_domain):
@@ -162,9 +150,7 @@ def backtracking_search(assignments : Assignment , problem : Problem) -> Optiona
                     return result 
                 
                 problem.domains=previous_domain
-                assignments = prev_assignments 
-        else : 
-            assignments.pop(variable_selected)            
+                assignments = prev_assignments           
 
     return None
 #NotImplemented()
