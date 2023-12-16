@@ -82,24 +82,8 @@ class CryptArithmeticProblem(Problem):
                 #-------------
                 #   RH  S 
             
-    
-        for i in range(len(RHS)): 
-            if i == (len(RHS)-1): 
-                letter1 = LHS0[-1]
-                letter2 = LHS1[-1]
-                concat= letter1+ letter2
-                problem.variables.append(concat)
-                problem.domains[concat] = set(range(1,100))
-                problem.constraints.append(BinaryConstraint((concat, letter1), lambda x,y: (x%10)==y ))
-                problem.constraints.append(BinaryConstraint((concat, letter2), lambda x,y: (x//10)==y ))
-                problem.constraints.append(BinaryConstraint((concat, RHS[-1]), lambda x,y:  (x+y*10)%10==y ))
-
-
-
-
-
-        print(problem.variables)
-        return problem
+    # Add ternary constraints for the last digits
+     
 
 
     # Read a cryptarithmetic puzzle from a file
