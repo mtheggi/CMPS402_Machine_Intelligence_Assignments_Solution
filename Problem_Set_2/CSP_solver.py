@@ -110,7 +110,29 @@ def solve(problem: Problem) -> Optional[Assignment]:
     if not one_consistency(problem):
         return None
     return backtracking_search({} , problem) 
-    
+    # def backtrack(assignment: Assignment, domains: Dict[str, set]) -> Optional[Assignment]:
+    #     # If assignment is complete and satisfies all constraints, return it
+    #     if problem.is_complete(assignment) and problem.satisfies_constraints(assignment):
+    #         return assignment
+
+    #     # Select an unassigned variable using the MRV heuristic
+    #     var = minimum_remaining_values(problem, domains)
+
+    #     # Try all values in the domain of the variable, ordered by the least restraining value heuristic
+    #     for value in least_restraining_values(problem, var, domains):
+    #         new_assignment = assignment.copy()
+    #         new_assignment[var] = value
+    #         new_domains = domains.copy()
+    #         new_domains.pop(var)
+
+    #         # Apply forward checking
+    #         if forward_checking(problem, var, value, new_domains):
+    #             result = backtrack(new_assignment, new_domains)
+    #             if result is not None:
+    #                 return result
+
+    #     return None
+    # return backtrack({}, problem.domains)
 
 def is_assignment_consistent(assignment: Assignment, problem: Problem) -> bool:
     for constraint in problem.constraints:
@@ -123,7 +145,6 @@ def is_assignment_consistent(assignment: Assignment, problem: Problem) -> bool:
 
 
 def backtracking_search(assignments : Assignment , problem : Problem) -> Optional[Assignment]:
-    # print(assignments)
     if problem.is_complete(assignments):
         return assignments 
     variable_selected = minimum_remaining_values(problem, problem.domains)  
