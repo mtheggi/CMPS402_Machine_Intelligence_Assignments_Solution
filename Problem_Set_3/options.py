@@ -1,7 +1,7 @@
 # This file contains the options that you should modify to solve Question 2
 
 def question2_1():
-    #TODO: Choose options that would lead to the desired results 
+    #TODO: Choose opsdfsdftions that would lead to the desired results 
     return {
         "noise": 0,
         "discount_factor": 1,
