@@ -2,7 +2,7 @@ import time
 from snake import SnakeEnv, SnakeObservation
 from agents import HumanAgent, RandomAgent
 from value_iteration import ValueIterationAgent
-from policy_iteration import PolicyIterationAgent
+# from policy_iteration import PolicyIterationAgent
 from reinforcement_learning import SARSALearningAgent, QLearningAgent, ApproximateQLearningAgent
 import argparse
 

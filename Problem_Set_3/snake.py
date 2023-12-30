@@ -78,8 +78,11 @@ class SnakeEnv(Environment[SnakeObservation, Direction]):
             self.rng.seed(seed) # Initialize the random generator using the seed
         # TODO add your code here
         # IMPORTANT NOTE: Define the snake before calling generate_random_apple
-        NotImplemented()
-
+        #NotImplemented()
+        self.snake = [Point(self.width//2, self.height//2)]
+        self.direction = Direction.LEFT
+        self.apple = self.generate_random_apple()
+        
         return SnakeObservation(tuple(self.snake), self.direction, self.apple)
 
     def actions(self) -> List[Direction]:
@@ -92,7 +95,30 @@ class SnakeEnv(Environment[SnakeObservation, Direction]):
         # TODO add your code here
         # a snake can wrap around the grid
         # NOTE: The action order does not matter
-        NotImplemented()
+        current_direction = self.direction
+
+        # All possible directions
+        all_directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT , Direction.NONE]
+
+        # The snake cannot move in the opposite direction to its current direction
+        opposite_directions = {
+            Direction.UP: Direction.DOWN,
+            Direction.DOWN: Direction.UP,
+            Direction.LEFT: Direction.RIGHT,
+            Direction.RIGHT: Direction.LEFT,
+            Direction.NONE: Direction.NONE
+        }
+
+        # Remove the opposite direction to the current direction from the possible actions
+        all_directions.remove(opposite_directions[current_direction])
+        actions=all_directions
+        for d in all_directions:
+            if self.direction == d:
+                actions.remove(d)
+                # actions.append(Direction.NONE)
+
+        return all_directions
+
 
     def step(self, action: Direction) -> \
             Tuple[SnakeObservation, float, bool, Dict]:
@@ -110,13 +136,34 @@ class SnakeEnv(Environment[SnakeObservation, Direction]):
             - info (Dict): A dictionary containing any extra information. You can keep it empty.
         """
         # TODO Complete the following function
-        NotImplemented()
+        #NotImplemented()
+        # Check if the action is valid
+        # print(self.snake)
+        # print(self.direction)
+        # print(action)
+        action = self.direction if action == Direction.NONE else action
+        self.direction = action
 
-        done = False
-        reward = 0
-        observation = SnakeObservation(tuple(self.snake), self.direction, self.apple)
-        
-        return observation, reward, done, {}
+        newPoint = Point(
+            (self.snake[0].x - 1 if action == Direction.LEFT else self.snake[0].x + 1 if action == Direction.RIGHT else self.snake[0].x) % self.width,
+            (self.snake[0].y - 1 if action == Direction.UP else self.snake[0].y + 1 if action == Direction.DOWN else self.snake[0].y) % self.height
+        )
+
+        if self.apple == newPoint:
+            self.snake.insert(0, newPoint)
+            if len(self.snake) == self.width * self.height:
+                return SnakeObservation(tuple(self.snake), self.direction, self.apple), 101, True, {}
+            self.apple = self.generate_random_apple()
+            reward = 1
+        elif newPoint in self.snake:
+            return SnakeObservation(tuple(self.snake), self.direction, self.apple), -100, True, {}
+        else:
+            self.snake.insert(0, newPoint)
+            self.snake.pop()
+            reward = 0
+
+        return SnakeObservation(tuple(self.snake), self.direction, self.apple), reward, False, {}
+
 
     ###########################
     #### Utility Functions ####
